@@ -1,0 +1,19 @@
+{
+  "app": {
+    "title": "Sora’s Bakery",
+    "menu": "Menu",
+    "sweet": "Sweet",
+    "savory": "Savory",
+    "bestSelling": "Best Selling",
+    "addToCart": "Add to Cart",
+    "successAdded": "{{qty}} {{item}}(s) added to cart."
+  },
+  "items": {
+    "Chocolate Cake": "Chocolate Cake",
+    "Strawberry Tart": "Strawberry Tart",
+    "Cupcake": "Cupcake",
+    "Veg Roll": "Veg Roll",
+    "Cheese Roll": "Cheese Roll",
+    "Garlic Bread": "Garlic Bread"
+  }
+}

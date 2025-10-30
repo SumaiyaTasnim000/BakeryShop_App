@@ -1,0 +1,19 @@
+{
+  "app": {
+    "title": "সোরা’স বেকারি",
+    "menu": "মেনু",
+    "sweet": "মিষ্টি",
+    "savory": "নোনতা",
+    "bestSelling": "বেস্ট সেলিং",
+    "addToCart": "কার্টে যোগ করুন",
+    "successAdded": "{{qty}} {{item}} টি কার্টে যোগ হয়েছে।"
+  },
+  "items": {
+    "Chocolate Cake": "চকলেট কেক",
+    "Strawberry Tart": "স্ট্রবেরি টার্ট",
+    "Cupcake": "কাপকেক",
+    "Veg Roll": "ভেজ রোল",
+    "Cheese Roll": "চিজ রোল",
+    "Garlic Bread": "গালিক ব্রেড"
+  }
+}
