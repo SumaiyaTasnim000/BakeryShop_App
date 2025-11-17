@@ -2,42 +2,43 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
-import Navbar from "../components/Navbar";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Navbar from "../../../components/Navbar";
 
 import {
-  Button,
   FlatList,
   Image,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart } from "../store/cartSlice";
-import { selectBestSellers } from "../store/selectors";
-import { RootState } from "../store/store";
+import { addToCart } from "../../../store/cartSlice";
+import { selectBestSellers } from "../../../store/selectors";
+import { RootState } from "../../../store/store";
 
 const sweetItems = [
   {
     id: "1",
     name: "Chocolate Cake",
     price: 300,
-    image: require("../assets/images/Chocolate Cake.jpg"),
+    image: require("../../../assets/images/Chocolate Cake.jpg"),
   },
   {
     id: "2",
     name: "Strawberry Tart",
     price: 220,
-    image: require("../assets/images/Strawberry Tart.jpg"),
+    image: require("../../../assets/images/Strawberry Tart.jpg"),
   },
   {
     id: "3",
     name: "Cupcake",
     price: 80,
-    image: require("../assets/images/Cupcake.jpg"),
+    image: require("../../../assets/images/Cupcake.jpg"),
   },
 ];
 
@@ -100,7 +101,24 @@ export default function Home() {
               >
                 <Text style={styles.qtyText}>−</Text>
               </TouchableOpacity>
-              <Text style={styles.qtyValue}>{quantities[item.id] || 0}</Text>
+
+              {/* 👇 Editable text input for quantity */}
+              <TextInput
+                style={styles.qtyInput}
+                keyboardType="number-pad"
+                value={String(quantities[item.id] || 0)}
+                onChangeText={(text) => {
+                  const num = text.replace(/[^0-9]/g, "");
+                  setQuantities((prev) => ({
+                    ...prev,
+                    [item.id]: num === "" ? 0 : parseInt(num),
+                  }));
+                }}
+                maxLength={3}
+                editable={true} // ✅ ensures it's focusable
+                focusable={true} // ✅ required for Android sometimes
+              />
+
               <TouchableOpacity
                 style={styles.qtyButton}
                 onPress={() => increaseQty(item.id)}
@@ -109,10 +127,20 @@ export default function Home() {
               </TouchableOpacity>
             </View>
 
-            <Button
-              title={t("app.addToCart")}
+            <TouchableOpacity
               onPress={() => handleAddToCart(item)}
-            />
+              style={{
+                backgroundColor: "#2196F3",
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                borderRadius: 5,
+                marginTop: 6,
+              }}
+            >
+              <Text style={{ color: "white", fontWeight: "bold" }}>
+                {t("app.addToCart")}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       />
@@ -120,23 +148,21 @@ export default function Home() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* ✅ Fixed Top Navbar */}
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={{ flex: 1, backgroundColor: "#fff" }}
+    >
       <Navbar />
 
       <ScrollView
         style={styles.container}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-        decelerationRate="normal" // ✅ slows scroll speed (default is 'fast' on Android)
-        scrollEventThrottle={16}
-        overScrollMode="never"
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 10 }}
       >
         {renderSection(t("app.sweet"), sweetItems)}
         {renderSection(t("app.savory"), savoryItems)}
         {renderSection(t("app.bestSelling"), bestSellers)}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -159,7 +185,11 @@ const styles = StyleSheet.create({
   },
   name: { fontSize: 18, fontWeight: "500" },
   price: { fontSize: 16, color: "gray", marginBottom: 5 },
-  qtyContainer: { flexDirection: "row", alignItems: "center", marginBottom: 5 },
+  qtyContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
+  },
   qtyButton: {
     backgroundColor: "#d35400",
     borderRadius: 5,
@@ -205,6 +235,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     padding: 20,
-    paddingTop: 80, // ✅ ensures Sweet section starts below navbar
+  },
+  qtyInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    width: 50,
+    height: 36, // ↑ a bit taller for Android alignment
+    textAlign: "center",
+    fontSize: 16,
+    color: "#000",
+    backgroundColor: "#fff",
+    marginHorizontal: 8,
+    paddingVertical: 0, // ensures vertical centering of text
+    includeFontPadding: false, // fixes text being pushed down on Android
   },
 });

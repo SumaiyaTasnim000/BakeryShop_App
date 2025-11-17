@@ -1,8 +1,8 @@
-// components/Navbar.tsx
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context"; // ✅ Correct SafeArea
 import i18n from "../i18n";
 
 export default function Navbar() {
@@ -10,7 +10,6 @@ export default function Navbar() {
   const [currentLang, setCurrentLang] = useState(i18n.language);
   const router = useRouter();
 
-  // 🆕 Track language changes and re-render
   useEffect(() => {
     const handleLangChange = () => setCurrentLang(i18n.language);
     i18n.on("languageChanged", handleLangChange);
@@ -18,30 +17,27 @@ export default function Navbar() {
   }, []);
 
   return (
-    <View style={styles.navbar}>
-      {/* Left side: sandwich menu */}
-      <TouchableOpacity onPress={() => setMenuVisible(true)}>
-        <Ionicons name="menu" size={28} color="#fff" />
-      </TouchableOpacity>
+    <SafeAreaView edges={["top"]} style={styles.safeArea}>
+      <View style={styles.navbar}>
+        <TouchableOpacity onPress={() => setMenuVisible(true)}>
+          <Ionicons name="menu" size={28} color="#fff" />
+        </TouchableOpacity>
 
-      {/* ✅ Center title now updates dynamically */}
-      <Text style={styles.title}>{i18n.t("app.title")}</Text>
+        <Text style={styles.title}>{i18n.t("app.title")}</Text>
 
-      {/* Right side: cart icon */}
-      <TouchableOpacity onPress={() => router.push("/cart")}>
-        <Ionicons name="cart" size={26} color="#fff" />
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push("../cart")}>
+          <Ionicons name="cart" size={26} color="#fff" />
+        </TouchableOpacity>
+      </View>
 
-      {/* Modal for dropdown menu */}
+      {/* Modal */}
       <Modal transparent visible={menuVisible} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.menuBox}>
-            {/* ✅ Settings title also localized */}
             <Text style={styles.menuTitle}>
-              ⚙️ {i18n.t(currentLang === "en" ? "Settings" : "সেটিংস")}
+              ⚙️ {currentLang === "en" ? "Settings" : "সেটিংস"}
             </Text>
 
-            {/* ✅ Language toggle */}
             <TouchableOpacity
               style={styles.languageButton}
               onPress={() => {
@@ -54,7 +50,21 @@ export default function Navbar() {
               </Text>
             </TouchableOpacity>
 
-            {/* ✅ Close button localized */}
+            <TouchableOpacity
+              style={[
+                styles.languageButton,
+                { marginTop: 10, backgroundColor: "#DF2B2A" },
+              ]}
+              onPress={() => {
+                setMenuVisible(false);
+                router.push("/(auth)/login");
+              }}
+            >
+              <Text style={styles.languageText}>
+                {currentLang === "en" ? "Logout" : "লগআউট"}
+              </Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               onPress={() => setMenuVisible(false)}
               style={styles.closeButton}
@@ -66,22 +76,24 @@ export default function Navbar() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  navbar: {
+  safeArea: {
     backgroundColor: "#d35400",
+  },
+  navbar: {
+    height: 55, // 👈 fixed height makes header perfect
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 15,
-    paddingVertical: 10,
   },
   title: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
   },
   modalOverlay: {
@@ -97,11 +109,6 @@ const styles = StyleSheet.create({
     width: 220,
     alignItems: "center",
   },
-  menuTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
-  },
   languageButton: {
     padding: 10,
     backgroundColor: "#d35400",
@@ -110,6 +117,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   languageText: { color: "#fff", fontWeight: "bold" },
+  menuTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 15 },
   closeButton: {
     marginTop: 15,
     backgroundColor: "#555",

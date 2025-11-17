@@ -32,7 +32,7 @@ yarn-error.*
 
 # local env files
 .env*.local
-
+bakery-backend/.env
 # typescript
 *.tsbuildinfo
 

@@ -55,7 +55,7 @@ TypeScript + JSX -- .tsx file extension
 https://expo.dev/artifacts/eas/6JrwvLV23waCHU3PMncs54.aab
 
 1. To run server (http://localhost:8081/)
-   C:\expo-projects\bakery-app : npx expo start
+   C:\Users\X1 CARBON\bakery-app : npx expo start
 2. """Cache remove and use-> npx expo start --tunnel --clear """
 
 3. Alt --> npx expo start --tunnel
@@ -70,3 +70,5 @@ When ready to test a full APK → run eas build --platform android --profile pre
    c. Download the Android Emulator apk from->https://expo.dev/go
    d. adb install (drag and drop the apk to terminal)ex: adb install 'c:\Users\X1 CARBON\Expo-Go-54.0.6.apk'  
    e. then run -> npx expo start --tunnel --clear
+
+Connect to backend-- node server.js in directory C:\Users\X1 CARBON\bakery-app\bakery-backend
