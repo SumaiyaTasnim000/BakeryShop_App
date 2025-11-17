@@ -7,9 +7,15 @@ import { store } from "../store/store";
 export default function Layout() {
   return (
     <Provider store={store}>
-      <Stack>
-        <Stack.Screen name="index" options={{ title: "Bakery Menu" }} />
-        <Stack.Screen name="cart" options={{ title: "Your Cart" }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* 👇 Login screen loads first when app opens */}
+        <Stack.Screen name="(auth)/login" />
+
+        {/* 👇 Registration page */}
+        <Stack.Screen name="(auth)/register" />
+
+        {/* 👇 Main app with bottom tabs (home, cart) */}
+        <Stack.Screen name="(tabs)" />
       </Stack>
     </Provider>
   );
