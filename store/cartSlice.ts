@@ -4,6 +4,7 @@ interface Item {
   id: string;
   name: string;
   price: number;
+  image?: any;
 }
 
 interface CartState {
@@ -26,9 +27,10 @@ const cartSlice = createSlice({
     },
 
     // ✅ Remove a single item (optional)
-    removeFromCart: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter((i) => i.id !== action.payload);
-    },
+   removeItem: (state, action: PayloadAction<string>) => {
+  state.items = state.items.filter((item) => item.id !== action.payload);
+},
+
 
     // ✅ Checkout logic
     clearCartAfterCheckout: (state) => {
@@ -43,7 +45,7 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCart, removeFromCart, clearCartAfterCheckout } =
+export const { addToCart, removeItem, clearCartAfterCheckout } =
   cartSlice.actions;
 
 export default cartSlice.reducer;

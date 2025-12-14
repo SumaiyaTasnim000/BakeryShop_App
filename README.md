@@ -56,7 +56,7 @@ https://expo.dev/artifacts/eas/6JrwvLV23waCHU3PMncs54.aab
 
 1. To run server (http://localhost:8081/)
    C:\Users\X1 CARBON\bakery-app : npx expo start
-2. """Cache remove and use-> npx expo start --tunnel --clear """
+2. """Cache remove and use-> npx expo start --tunnel --clear """ or npx expo start -c
 
 3. Alt --> npx expo start --tunnel
 4. npm start
@@ -72,3 +72,35 @@ When ready to test a full APK → run eas build --platform android --profile pre
    e. then run -> npx expo start --tunnel --clear
 
 Connect to backend-- node server.js in directory C:\Users\X1 CARBON\bakery-app\bakery-backend
+
+7.  Install all project dependencies
+    npm install --legacy-peer-deps
+    then--
+    npx expo install
+8.  build Expo Dev Client (only when You change app.json,google-services.json etc):
+    eas build:configure
+    eas build -p android --profile development
+    and then: npx expo start --dev-client --localhost
+    (Clear cache and run) --dev-client --localhost
+
+9.  Remove the old node_modules and package-lock.json:
+    a. Remove-Item -Recurse -Force node_modules
+    b. Remove-Item package-lock.json
+    c. (Reinstall everything) npm install
+    d. npx expo install expo-notifications + npx expo install expo-device + npx expo install expo-dev-client + npm install axios + npm install firebase + npm install firebase-admin
+    e. eas build -p android --profile development(creates the APK / AAB on Expo servers)
+    f. eas build:run -p android --profile development (Install the dev client onto your emulator) or with cache cleared--> eas build -p android --profile production --clear-cache
+
+    g. npx expo start --dev-client --localhost <----or-----> npx expo start --dev-client --lan
+
+10. To check any versions- npm ls "name of package"
+11. In app - URL: http://10.0.2.2:8081
+
+12. Real Device App startup and emu supported startup- npx expo start --dev-client --lan
+13. GENERATE YOUR DEVELOPMENT APK (FOR ADMIN DEVICE) ->
+    a. eas login
+    b. eas build -p android --profile development
+
+npx expo prebuild --clean
+
+eas build -p android --profile production --clear-cache

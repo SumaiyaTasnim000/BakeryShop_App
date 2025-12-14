@@ -1,45 +1,79 @@
+import axios from "axios";
 import { useRouter } from "expo-router";
 import React from "react";
+import { Image } from "react-native";
+import { removeItem } from "../../../store/cartSlice";
+import { API_BASE_URL } from "../../../utils/apiConfig";
+
 import {
   Alert,
   FlatList,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { clearCartAfterCheckout } from "../../../store/cartSlice";
 import { RootState } from "../../../store/store";
+interface GroupedCartItem {
+  id: string;
+  name: string;
+  price: number;
+  image?: any;
+  quantity: number;
+}
 
 export default function Cart() {
   const dispatch = useDispatch();
   const router = useRouter();
   const cartItems = useSelector((state: RootState) => state.cart.items);
-
-  const handleCheckout = () => {
+  // Calculate total bill
+  const totalAmount = cartItems.reduce((sum, item) => sum + item.price, 0);
+  // Group items so duplicates become one item with a quantity
+  const groupedItems: GroupedCartItem[] = Object.values(
+    cartItems.reduce((acc: any, item) => {
+      if (!acc[item.id]) {
+        acc[item.id] = { ...item, quantity: 0 };
+      }
+      acc[item.id].quantity += 1;
+      return acc;
+    }, {})
+  );
+  const handleCheckout = async () => {
+    console.log("Checkout button tapped!!!");
     if (cartItems.length === 0) {
       Alert.alert("Empty Cart", "Your cart is empty!");
       return;
     }
 
-    dispatch(clearCartAfterCheckout());
-    Alert.alert("Success", "Checkout complete! Thank you for your order 🍰");
-
-    // ✅ Safely navigate back
     try {
-      if (router.canGoBack()) {
-        router.back();
-      } else {
-        // Always push with a delay to ensure stack is ready
-        setTimeout(() => {
-          router.replace("../");
-        }, 200);
-      }
+      // Prepare grouped items for backend
+      const itemsToSend = groupedItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      const total = totalAmount;
+
+      // 🔥 Send order to backend (IMPORTANT FIX)
+      const res = await axios.post(API_BASE_URL + "/api/place-order", {
+        items: itemsToSend,
+        total: total,
+      });
+
+      console.log("Order Response:", res.data);
+
+      dispatch(clearCartAfterCheckout());
+      Alert.alert("Success", "Checkout complete! Thank you for your order 🍰");
+
+      router.replace("/(tabs)/home");
     } catch (err) {
-      console.log("Navigation error:", err);
-      router.replace("../"); // fallback
+      console.log("Checkout error:", err);
+      Alert.alert("❌ Error", "Order could not be placed!");
     }
   };
 
@@ -49,26 +83,30 @@ export default function Cart() {
         <Text style={styles.header}>🛒 Your Cart</Text>
 
         <FlatList
-          data={cartItems}
-          keyExtractor={(item, index) => item.id + index}
+          data={groupedItems}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.card}>
+              {/* Image */}
+              {item.image && (
+                <Image source={item.image} style={styles.itemImage} />
+              )}
+
+              {/* Name & Price */}
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.price}>৳{item.price}</Text>
 
+              {/* Correct Quantity */}
+              <Text style={styles.qtyText}>Quantity: {item.quantity}</Text>
+
+              {/* Remove entire item group */}
               <TouchableOpacity
-                style={styles.backButton}
+                style={styles.removeButton}
                 onPress={() => {
-                  // ✅ If user came from somewhere, go back
-                  if (router.canGoBack()) {
-                    router.back();
-                  } else {
-                    // ✅ Otherwise, safely go to the menu (index)
-                    router.replace("../");
-                  }
+                  dispatch(removeItem(item.id)); // remove ALL copies
                 }}
               >
-                <Text style={styles.buttonText}>← Back</Text>
+                <Text style={styles.removeText}>Remove Item</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -79,11 +117,17 @@ export default function Cart() {
           }
         />
 
+        {/* 🔥 Total Bill Section */}
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalLabel}>Total:</Text>
+          <Text style={styles.totalAmount}>৳{totalAmount}</Text>
+        </View>
+
         {/* ✅ Button row for navigation and checkout */}
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => router.replace("/(tabs)/home")}
           >
             <Text style={styles.buttonText}>← Back</Text>
           </TouchableOpacity>
@@ -127,7 +171,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 6,
-    alignSelf: "flex-start",
+    alignSelf: "center",
+    marginTop: 10,
   },
   removeText: { color: "#fff", fontWeight: "bold" },
 
@@ -153,4 +198,41 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: { color: "#fff", fontWeight: "bold" },
+  itemImage: {
+    width: "100%",
+    height: 140,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  qtyText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#555",
+    marginBottom: 10,
+    //textAlign: "center",
+  },
+  totalContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    marginVertical: 10,
+    backgroundColor: "#f3f3f3",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+
+  totalAmount: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#d35400",
+  },
 });

@@ -1,22 +1,38 @@
 // app/_layout.tsx
-import { Stack } from "expo-router";
+import { Slot, useRouter } from "expo-router";
 import { Provider } from "react-redux";
 import "../i18n";
 import { store } from "../store/store";
 
+import * as Notifications from "expo-notifications";
+import { useEffect, useRef } from "react";
+import { registerForPushNotificationsAsync } from "../utils/notificationSetup";
+
 export default function Layout() {
+  const router = useRouter();
+  const responseListener = useRef<any>(null);
+
+  useEffect(() => {
+    // Register device for notifications
+    registerForPushNotificationsAsync();
+
+    // When notification is tapped
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener(() => {
+        router.replace("/(tabs)/notification"); // 👈 redirect to notification tab
+      });
+
+    return () => {
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, []);
+
   return (
     <Provider store={store}>
-      <Stack screenOptions={{ headerShown: false }}>
-        {/* 👇 Login screen loads first when app opens */}
-        <Stack.Screen name="(auth)/login" />
-
-        {/* 👇 Registration page */}
-        <Stack.Screen name="(auth)/register" />
-
-        {/* 👇 Main app with bottom tabs (home, cart) */}
-        <Stack.Screen name="(tabs)" />
-      </Stack>
+      {/* Slot ensures Expo Router loads child layouts correctly */}
+      <Slot />
     </Provider>
   );
 }

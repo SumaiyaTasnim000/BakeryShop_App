@@ -1,6 +1,9 @@
 import axios from "axios";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { API_BASE_URL } from "../../utils/apiConfig";
+import { registerForPushNotificationsAsync } from "../../utils/notificationSetup";
+
 import {
   Alert,
   ScrollView,
@@ -16,26 +19,38 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  // 🔴 You can remove this old one:
+  // Alert.alert("API DEBUG", API_BASE_URL);
 
   const handleLogin = async () => {
+    // ✅ DEBUG 1: show what URL the app will call
+    const url = API_BASE_URL + "/api/auth/login";
+    Alert.alert("CALLING", url);
+    console.log("AXIOS CALL →", url);
+
     if (!email || !password) {
       Alert.alert("Missing Info", "Please enter both email and password!");
       return;
     }
 
     setLoading(true);
+
     try {
-      const BASE_URL = "http://192.168.0.13:5000/api/auth/login"; // 👈 update to your IP
+      const res = await axios.post(url, {
+        email,
+        password,
+      });
 
-      const res = await axios.post(BASE_URL, { email, password });
-      const { message, role } = res.data;
-
-      onPress: () => router.replace("/(tabs)/home"),
-        // Save role for later use (could be AsyncStorage or Redux)
-        router.replace("/(tabs)/home");
+      const { role } = res.data;
+      if (role === "admin") {
+        await registerForPushNotificationsAsync();
+        console.log("✅ Admin FCM registered");
+      }
+      // success → navigate
+      router.replace("/(tabs)/home");
     } catch (err) {
-      console.log(err.response?.data);
-      Alert.alert("❌ Error", err.response?.data?.message || "Login failed!");
+      console.log("AXIOS ERROR:", err);
+      Alert.alert("❌ Error", "Login failed!\n" + JSON.stringify(err.message));
     } finally {
       setLoading(false);
     }
@@ -47,7 +62,7 @@ export default function LoginScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.container}>
-        <Text style={styles.title}>Login to Your Account</Text>
+        <Text style={styles.title}>Login to Sora's Bakery (v2)</Text>
 
         <InputField placeholder="Email" value={email} onChangeText={setEmail} />
         <InputField
