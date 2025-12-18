@@ -14,10 +14,6 @@ router.post("/", (req, res) => {
     return res.status(400).json({ message: "No items to print" });
   }
 
-  /* =====================================================
-     1️⃣ SAVE SALE TO DATABASE
-  ===================================================== */
-
   db.query(
     "INSERT INTO sales (total_amount) VALUES (?)",
     [total],
@@ -28,7 +24,6 @@ router.post("/", (req, res) => {
       }
 
       const saleId = saleResult.insertId;
-
       const values = items.map((item) => [saleId, item.id, item.quantity]);
 
       db.query(
@@ -40,42 +35,45 @@ router.post("/", (req, res) => {
             return res.status(500).json({ error: "Failed to save sale items" });
           }
 
-          /* =====================================================
-             2️⃣ GENERATE RECEIPT PDF
-          ===================================================== */
+          /* ===============================
+             SAFE TEMP FILE (IMPORTANT)
+          =============================== */
 
           const receiptPath = path.join(
-            process.cwd(),
+            process.env.TEMP || "C:\\Windows\\Temp",
             `receipt-${Date.now()}.pdf`
           );
+
+          console.log("📝 Creating PDF:", receiptPath);
 
           const doc = new PDFDocument({
             size: "A4",
             margin: 40,
+            compress: false,
           });
 
           const stream = fs.createWriteStream(receiptPath);
+
+          stream.on("error", (e) => {
+            console.error("❌ Stream error:", e);
+          });
+
           doc.pipe(stream);
+          doc.font("Helvetica");
 
-          // Header
-          doc
-            .fontSize(18)
-            .text("Sora’s Bakery", { align: "center" })
-            .moveDown(0.5);
-
-          doc
-            .fontSize(10)
-            .text(new Date().toLocaleString(), { align: "center" })
-            .moveDown();
+          doc.fontSize(18).text("Sora’s Bakery", { align: "center" });
+          doc.moveDown(0.5);
+          doc.fontSize(10).text(new Date().toLocaleString(), {
+            align: "center",
+          });
+          doc.moveDown();
 
           doc.moveTo(40, doc.y).lineTo(550, doc.y).stroke();
           doc.moveDown();
 
-          // Items
-          doc.fontSize(12);
           items.forEach((item) => {
             doc.text(
-              `${item.name}   x${item.quantity}   ৳${
+              `${item.name}   x${item.quantity}   Tk ${
                 item.price * item.quantity
               }`
             );
@@ -85,40 +83,36 @@ router.post("/", (req, res) => {
           doc.moveTo(40, doc.y).lineTo(550, doc.y).stroke();
           doc.moveDown();
 
-          // Total
-          doc
-            .fontSize(14)
-            .text(`TOTAL: ৳${total}`, { align: "right" })
-            .moveDown();
-
-          doc
-            .fontSize(12)
-            .text("Thank you for your purchase!", { align: "center" });
+          doc.text(`TOTAL: Tk ${total}`, { align: "right" });
+          doc.moveDown();
+          doc.text("Thank you for your purchase!", { align: "center" });
 
           doc.end();
 
+          /* ===============================
+             PRINT AFTER FILE EXISTS
+          =============================== */
+
           stream.on("finish", () => {
-            /* =====================================================
-               3️⃣ PRINT PDF USING SUMATRAPDF
-            ===================================================== */
+            console.log("✅ PDF written:", receiptPath);
 
-            const printerName = "Pantum-6F0F47 (M6550NW series)";
-            const sumatraPath = `"C:\\Users\\X1 CARBON\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe"`;
+            const sumatra = `"C:\\Users\\X1 CARBON\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe"`;
 
-            const command = `${sumatraPath} -print-to "${printerName}" -silent "${receiptPath}"`;
+            const command = `${sumatra} -print-to-default "${receiptPath}"`;
 
-            exec(command, (error, stdout, stderr) => {
-              if (error) {
-                console.error("❌ Print error:", error);
-                console.error(stderr);
-                return res.status(500).json({ error: "Print failed" });
-              }
+            // HARD delay for Windows spooler
+            setTimeout(() => {
+              console.log("🖨️ Printing...");
+              exec(command, (error) => {
+                if (error) {
+                  console.error("❌ Print error:", error);
+                  return res.status(500).json({ error: "Print failed" });
+                }
 
-              console.log("🖨️ PDF printed & sale saved successfully");
-              res.json({
-                message: "Printed & sale recorded",
+                console.log("✅ Printed successfully");
+                res.json({ message: "Printed & sale recorded" });
               });
-            });
+            }, 1500);
           });
         }
       );

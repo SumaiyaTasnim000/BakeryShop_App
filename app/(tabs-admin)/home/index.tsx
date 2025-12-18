@@ -16,10 +16,10 @@ import {
   View,
 } from "react-native";
 
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { API_BASE_URL } from "../../../config/apiconfig";
 import { addToCart, increaseQty } from "../../../store/cartSlice";
-import { selectBestSellers } from "../../../store/selectors";
-import { RootState } from "../../../store/store";
 
 /* ------------------ DATA ------------------ */
 
@@ -74,12 +74,6 @@ export default function Home() {
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-  const allItems = [...sweetItems, ...savoryItems];
-
-  const bestSellers = useSelector((state: RootState) =>
-    selectBestSellers(state, allItems)
-  );
-
   const increaseInputQty = (id: string) => {
     setQuantities((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
   };
@@ -90,6 +84,24 @@ export default function Home() {
       [id]: Math.max((prev[id] ?? 0) - 1, 0),
     }));
   };
+  const [bestSelling, setBestSelling] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/stats/top-products`)
+      .then((res) => res.json())
+      .then((rows) => {
+        const allItems = [...sweetItems, ...savoryItems];
+
+        const mapped = rows
+          .map((row: any) =>
+            allItems.find((item) => item.id === String(row.id))
+          )
+          .filter(Boolean);
+
+        setBestSelling(mapped);
+      })
+      .catch(console.error);
+  }, []);
 
   const handleAddToCart = (item: any) => {
     const qty = quantities[item.id] ?? 0;
@@ -185,7 +197,8 @@ export default function Home() {
       >
         {renderSection(t("app.sweet"), sweetItems)}
         {renderSection(t("app.savory"), savoryItems)}
-        {renderSection(t("app.bestSelling"), bestSellers)}
+        {bestSelling.length > 0 &&
+          renderSection(t("app.bestSelling"), bestSelling)}
       </ScrollView>
     </View>
   );
