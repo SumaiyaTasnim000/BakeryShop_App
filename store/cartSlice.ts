@@ -1,49 +1,63 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface Item {
+export interface CartItem {
   id: string;
   name: string;
   price: number;
+  image?: any;
+  quantity: number;
 }
 
 interface CartState {
-  items: Item[];
-  salesCount: Record<string, number>;
+  items: CartItem[];
 }
 
 const initialState: CartState = {
   items: [],
-  salesCount: {},
 };
 
 const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    // ✅ When adding to cart
-    addToCart: (state, action: PayloadAction<Item>) => {
-      state.items.push(action.payload);
+    addToCart: (state, action: PayloadAction<Omit<CartItem, "quantity">>) => {
+      const existing = state.items.find(
+        (item) => item.id === action.payload.id
+      );
+
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        state.items.push({ ...action.payload, quantity: 1 });
+      }
     },
 
-    // ✅ Remove a single item (optional)
-    removeFromCart: (state, action: PayloadAction<string>) => {
+    increaseQty: (state, action: PayloadAction<string>) => {
+      const item = state.items.find((i) => i.id === action.payload);
+      if (item) item.quantity += 1;
+    },
+
+    decreaseQty: (state, action: PayloadAction<string>) => {
+      const item = state.items.find((i) => i.id === action.payload);
+      if (item && item.quantity > 1) item.quantity -= 1;
+    },
+
+    removeItem: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter((i) => i.id !== action.payload);
     },
 
-    // ✅ Checkout logic
     clearCartAfterCheckout: (state) => {
-      // Increase sales count for each item purchased
-      state.items.forEach((item) => {
-        state.salesCount[item.id] = (state.salesCount[item.id] || 0) + 1;
-      });
-
-      // Empty the cart after checkout
       state.items = [];
     },
   },
 });
 
-export const { addToCart, removeFromCart, clearCartAfterCheckout } =
-  cartSlice.actions;
+export const {
+  addToCart,
+  increaseQty,
+  decreaseQty,
+  removeItem,
+  clearCartAfterCheckout,
+} = cartSlice.actions;
 
 export default cartSlice.reducer;

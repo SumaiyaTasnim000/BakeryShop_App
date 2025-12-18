@@ -9,10 +9,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useDispatch } from "react-redux";
 import InputField from "../../components/InputField";
+import { API_BASE_URL } from "../../config/apiconfig";
+import { setRole } from "../../store/userSlice";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const dispatch = useDispatch();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,15 +29,24 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
+
     try {
-      const BASE_URL = "http://192.168.0.13:5000/api/auth/login"; // 👈 update to your IP
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+        email,
+        password,
+      });
 
-      const res = await axios.post(BASE_URL, { email, password });
-      const { message, role } = res.data;
+      const { role } = res.data; // 👈 extract role from backend response
 
-      onPress: () => router.replace("/(tabs)/home"),
-        // Save role for later use (could be AsyncStorage or Redux)
-        router.replace("/(tabs)/home");
+      // 👇 SAVE ROLE IN REDUX
+      dispatch(setRole(role));
+
+      // 👇 NAVIGATE AFTER STATE IS SET
+      if (role === "admin") {
+        router.replace("/(tabs-admin)/home");
+      } else {
+        router.replace("/(tabs-customer)/home");
+      }
     } catch (err) {
       console.log(err.response?.data);
       Alert.alert("❌ Error", err.response?.data?.message || "Login failed!");
@@ -47,7 +61,7 @@ export default function LoginScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.container}>
-        <Text style={styles.title}>Login to Your Account</Text>
+        <Text style={styles.title}>Sora's Bakery Login</Text>
 
         <InputField placeholder="Email" value={email} onChangeText={setEmail} />
         <InputField

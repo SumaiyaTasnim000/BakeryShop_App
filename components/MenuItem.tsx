@@ -45,7 +45,17 @@ export default function MenuItem({
         </TouchableOpacity>
       </View>
 
-      <Button title="Add to Cart" onPress={() => onAdd(item)} />
+      <Button
+        title="Add to Cart"
+        onPress={() =>
+          onAdd({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+          })
+        }
+      />
     </View>
   );
 }

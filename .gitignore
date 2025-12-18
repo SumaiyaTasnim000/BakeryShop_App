@@ -1,15 +1,25 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
+# =========================
+# Dependencies
+# =========================
 node_modules/
 
-# Expo
+# =========================
+# Expo / React Native
+# =========================
 .expo/
 dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# Generated native folders
+/ios
+/android
+
+# =========================
+# Native / Certificates
+# =========================
 .kotlin/
 *.orig.*
 *.jks
@@ -17,27 +27,43 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+*.pem
 
-# Metro
+# =========================
+# Metro / Debug
+# =========================
 .metro-health-check*
-
-# debug
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# =========================
 # macOS
+# =========================
 .DS_Store
-*.pem
 
-# local env files
+# =========================
+# Environment files
+# =========================
+.env
 .env*.local
 bakery-backend/.env
-# typescript
+
+# =========================
+# TypeScript
+# =========================
 *.tsbuildinfo
 
-app-example
+# =========================
+# Runtime / Generated files (IMPORTANT)
+# =========================
+receipt*.pdf
+receipt*.txt
+*.log
 
-# generated native folders
-/ios
-/android
+# =========================
+# Misc
+# =========================
+app-example
+# Printer artifacts
+bakery-backend/Pantum-6F0F47*

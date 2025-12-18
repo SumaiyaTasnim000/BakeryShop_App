@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import InputField from "../../components/InputField";
+import { API_BASE_URL } from "../../config/apiconfig";
 
 export default function RegisterScreen({ navigation }) {
   // ---- State ----
@@ -27,7 +28,7 @@ export default function RegisterScreen({ navigation }) {
     setLoading(true);
 
     try {
-      const BASE_URL = "http://192.168.0.13:5000/api/auth/register";
+      const BASE_URL = `${API_BASE_URL}/api/auth/register`;
 
       const res = await axios.post(BASE_URL, {
         name,

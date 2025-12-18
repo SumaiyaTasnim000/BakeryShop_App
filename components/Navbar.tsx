@@ -1,8 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context"; // ✅ Correct SafeArea
+import {
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import i18n from "../i18n";
 
 export default function Navbar() {
@@ -19,18 +26,25 @@ export default function Navbar() {
   return (
     <SafeAreaView edges={["top"]} style={styles.safeArea}>
       <View style={styles.navbar}>
+        {/* ☰ Menu (LEFT) */}
         <TouchableOpacity onPress={() => setMenuVisible(true)}>
-          <Ionicons name="menu" size={28} color="#fff" />
+          <Ionicons name="menu" size={26} color="#fff" />
         </TouchableOpacity>
 
-        <Text style={styles.title}>{i18n.t("app.title")}</Text>
+        {/* 🧁 Brand (CENTER) */}
+        <View style={styles.brand}>
+          <Image
+            source={require("../assets/images/Bakery_logo.jpg")}
+            style={styles.logo}
+          />
+          <Text style={styles.title}>{i18n.t("app.title")}</Text>
+        </View>
 
-        <TouchableOpacity onPress={() => router.push("../cart")}>
-          <Ionicons name="cart" size={26} color="#fff" />
-        </TouchableOpacity>
+        {/* Spacer (RIGHT) to balance menu icon */}
+        <View style={{ width: 26 }} />
       </View>
 
-      {/* Modal */}
+      {/* ⚙️ Settings Modal */}
       <Modal transparent visible={menuVisible} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.menuBox}>
@@ -40,10 +54,9 @@ export default function Navbar() {
 
             <TouchableOpacity
               style={styles.languageButton}
-              onPress={() => {
-                const newLang = currentLang === "en" ? "bn" : "en";
-                i18n.changeLanguage(newLang);
-              }}
+              onPress={() =>
+                i18n.changeLanguage(currentLang === "en" ? "bn" : "en")
+              }
             >
               <Text style={styles.languageText}>
                 {currentLang === "en" ? "বাংলা" : "English"}
@@ -84,24 +97,43 @@ const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: "#d35400",
   },
+
   navbar: {
-    height: 55, // 👈 fixed height makes header perfect
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 15,
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    paddingVertical: 6, // ✅ slim navbar
   },
+
+  brand: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  logo: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#fff",
+    resizeMode: "cover",
+  },
+
   title: {
     color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "600",
   },
+
+  /* Modal styles */
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
+
   menuBox: {
     backgroundColor: "#fff",
     padding: 20,
@@ -109,6 +141,13 @@ const styles = StyleSheet.create({
     width: 220,
     alignItems: "center",
   },
+
+  menuTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+
   languageButton: {
     padding: 10,
     backgroundColor: "#d35400",
@@ -116,8 +155,12 @@ const styles = StyleSheet.create({
     width: "80%",
     alignItems: "center",
   },
-  languageText: { color: "#fff", fontWeight: "bold" },
-  menuTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 15 },
+
+  languageText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+
   closeButton: {
     marginTop: 15,
     backgroundColor: "#555",

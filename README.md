@@ -71,4 +71,7 @@ When ready to test a full APK → run eas build --platform android --profile pre
    d. adb install (drag and drop the apk to terminal)ex: adb install 'c:\Users\X1 CARBON\Expo-Go-54.0.6.apk'  
    e. then run -> npx expo start --tunnel --clear
 
-Connect to backend-- node server.js in directory C:\Users\X1 CARBON\bakery-app\bakery-backend
+!!!! Connect to backend-- node server.js in directory C:\Users\X1 CARBON\bakery-app\bakery-backend
+Tips->
+
+1.  cltr+M for dev tools.
