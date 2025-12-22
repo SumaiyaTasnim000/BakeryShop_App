@@ -74,4 +74,7 @@ When ready to test a full APK → run eas build --platform android --profile pre
 !!!! Connect to backend-- node server.js in directory C:\Users\X1 CARBON\bakery-app\bakery-backend
 Tips->
 
-1.  cltr+M for dev tools.
+a. cltr+M for dev tools.
+
+7.  
+

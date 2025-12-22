@@ -24,7 +24,7 @@ router.get("/sales", (req, res) => {
       return res.status(500).json({ error: "Stats fetch failed" });
     }
 
-    res.json(results);
+    res.json(Array.isArray(results) ? results : []);
   });
 });
 
@@ -36,10 +36,13 @@ router.get("/top-products", (req, res) => {
   const query = `
     SELECT 
       p.id,
+      p.name,
+      p.price,
+      p.image,
       SUM(si.quantity) AS sold
     FROM sales_items si
     JOIN products p ON si.product_id = p.id
-    GROUP BY p.id
+    GROUP BY p.id, p.name, p.price, p.image
     ORDER BY sold DESC
     LIMIT 3
   `;
@@ -47,10 +50,10 @@ router.get("/top-products", (req, res) => {
   db.query(query, (err, results) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ error: "Top products fetch failed" });
+      return res.json([]); // ALWAYS return array
     }
 
-    res.json(results);
+    res.json(Array.isArray(results) ? results : []);
   });
 });
 

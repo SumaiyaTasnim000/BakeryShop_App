@@ -90,6 +90,12 @@ export default function Home() {
     fetch(`${API_BASE_URL}/api/stats/top-products`)
       .then((res) => res.json())
       .then((rows) => {
+        if (!Array.isArray(rows)) {
+          console.warn("top-products is not array:", rows);
+          setBestSelling([]);
+          return;
+        }
+
         const allItems = [...sweetItems, ...savoryItems];
 
         const mapped = rows
@@ -100,6 +106,7 @@ export default function Home() {
 
         setBestSelling(mapped);
       })
+
       .catch(console.error);
   }, []);
 
@@ -119,6 +126,10 @@ export default function Home() {
     Alert.alert(t("app.menu"), t("app.successAdded", { qty, item: item.name }));
     setQuantities((prev) => ({ ...prev, [item.id]: 0 }));
   };
+  const resolveImage = (item: any) => {
+    if (typeof item.image === "number") return item.image; // require()
+    return null; // DB images ignored for now
+  };
 
   const renderSection = (title: string, data: any[]) => (
     <View style={styles.section}>
@@ -133,8 +144,8 @@ export default function Home() {
 
           return (
             <View style={styles.card}>
-              {item.image && (
-                <Image source={item.image} style={styles.itemImage} />
+              {resolveImage(item) && (
+                <Image source={resolveImage(item)} style={styles.itemImage} />
               )}
 
               <Text style={styles.name}>{t(`items.${item.name}`)}</Text>
